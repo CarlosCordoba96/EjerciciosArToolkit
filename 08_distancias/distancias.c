@@ -112,7 +112,7 @@ static void init( void ) {
   double c[2] = {0.0, 0.0};  // Centro de patron (por defecto)
   
   // Abrimos dispositivo de video
-  if(arVideoOpen("-dev=/dev/video0") < 0) exit(0);  
+  if(arVideoOpen("-dev=/dev/video1") < 0) exit(0);  
   if(arVideoInqSize(&xsize, &ysize) < 0) exit(0);
 
   // Cargamos los parametros intrinsecos de la camara

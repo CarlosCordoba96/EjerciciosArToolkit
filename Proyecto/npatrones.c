@@ -4,7 +4,7 @@
 #include <AR/param.h>   
 #include <AR/ar.h>
 #include <math.h>
-
+int mode=0;
 // ==== Definicion de estructuras ===================================
 struct TObject{
   int id;                      // Identificador del patron
@@ -12,7 +12,9 @@ struct TObject{
   double width;                // Ancho del patron
   double center[2];            // Centro del patron  
   double patt_trans[3][4];     // Matriz asociada al patron
-  void (* drawme)(float);       // Puntero a funcion drawme
+  void (* drawme)(char);       // Puntero a funcion drawme
+  char color;
+int num;
 };
 
 struct TObject *objects = NULL;
@@ -21,7 +23,7 @@ int nobjects = 0;
 void print_error (char *error) {  printf("%s\n", error); exit(0); }
 
 // ==== addObject (Anade objeto a la lista de objetos) ==============
-void addObject(char *p, double w, double c[2], void (*drawme)(float)) 
+void addObject(char *p, double w, double c[2], void (*drawme)(char),int numero) 
 {
   int pattid;
 
@@ -37,40 +39,37 @@ void addObject(char *p, double w, double c[2], void (*drawme)(float))
   objects[nobjects-1].center[0] = c[0];
   objects[nobjects-1].center[1] = c[1];
   objects[nobjects-1].drawme = drawme;
+  objects[nobjects-1].num=numero;
 }
 
 // ==== draw****** (Dibujado especifico de cada objeto) =============
-void drawteapot(float a) {
+void drawteapot(char a) {
 GLfloat material[4];
 
-	if(a<60.0){//ROjo
+	if(a=='r'){//ROjo
 	  	material[0]=1.0;
 		material[1]=0.0;
 		material[2]=0.0;
 		material[3]=1.0; 
-		printf("rojo " );
-	}else if(a>60.1 && a<120.0){//Verde
+	}else if(a=='g'){//Verde
 		material[0]=0.0;
 		material[1]=1.0;
 		material[2]=0.0;
 		material[3]=1.0; 
-		printf("Verde ");
-	}else if(a>120.1){
+	}else if('b'){
 		material[0]=0.0;
 		material[1]=0.0;
 		material[2]=1.0;
 		material[3]=1.0; 
-		printf("Azul ");
 	}
 
   glMaterialfv(GL_FRONT, GL_AMBIENT, material);
   glTranslatef(0.0, 0.0, 40.0);
   glutSolidCube(80.0);
-  printf("teapot %f\n",a);
 
 }
-
-void drawcube(float a) {
+/*
+void drawcube(char a) {
 GLfloat material[4];
 
 	if(a<60.0){//ROjo
@@ -97,7 +96,7 @@ GLfloat material[4];
   glutSolidCube(80.0);
   printf("cube %f\n",a);
 }
-
+*/
 // ======== cleanup =================================================
 static void cleanup(void) {   // Libera recursos al salir ...
   arVideoCapStop();  arVideoClose();  argCleanup();  free(objects);  
@@ -107,8 +106,13 @@ static void cleanup(void) {   // Libera recursos al salir ...
 // ======== keyboard ================================================
 static void keyboard(unsigned char key, int x, int y) {
   switch (key) {
+  case 'z':
+ 	mode=!mode;
+	
+break;
   case 0x1B: case 'Q': case 'q':
     cleanup(); break;
+
   }
 }
 
@@ -117,7 +121,7 @@ void draw( void ) {
   double  gl_para[16];   // Esta matriz 4x4 es la usada por OpenGL
   GLfloat light_position[]  = {100.0,-200.0,200.0,0.0};
   int i;
-
+  char color;
   double v[3];
   float angle=0.0, module=0.0;
   
@@ -135,7 +139,9 @@ void draw( void ) {
 
       glEnable(GL_LIGHTING);  glEnable(GL_LIGHT0);
       glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-      // Calculamos el angulo de rotacion de la segunda marca
+
+	if(mode==0){
+      // Calculamos el angulo de rotacion de la segunda marca si modo es 0, sino se queda el mismo color
       v[0] = objects[i].patt_trans[0][0];
       v[1] = objects[i].patt_trans[1][0];
       v[2] = objects[i].patt_trans[2][0];
@@ -145,9 +151,17 @@ void draw( void ) {
       angle = acos (v[0]) * 57.2958;   // Sexagesimales! * (180/PI)
       //printf("SE ha detectado esto %f en el objeto %i\n",angle,i );
 
+	if(angle<60.0){//ROjo
+		color='r';
+	}else if(angle>60.1 && angle<120.0){//Verde
+		color='g';
+	}else if(angle>120.1){
+		color='b';
+	}
+      objects[i].color=color;
+	}
 
-
-      objects[i].drawme(angle);      // Llamamos a su función de dibujar
+      objects[i].drawme(objects[i].color);      // Llamamos a su función de dibujar
     }
   }
   glDisable(GL_DEPTH_TEST);
@@ -171,8 +185,8 @@ static void init( void ) {
   arInitCparam(&cparam);   // Inicializamos la camara con "cparam"
 
   // Inicializamos la lista de objetos
-  addObject("data/simple.patt", 90.0, c, drawteapot); 
-  addObject("data/identic.patt", 90.0, c, drawcube); 
+  addObject("data/simple.patt", 90.0, c, drawteapot,0); 
+  addObject("data/identic.patt", 90.0, c, drawteapot,1); 
 
   argInit(&cparam, 1.0, 0, 0, 0, 0);   // Abrimos la ventana 
 }
