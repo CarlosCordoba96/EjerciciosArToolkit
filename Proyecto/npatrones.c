@@ -3,6 +3,7 @@
 #include <AR/video.h>   
 #include <AR/param.h>   
 #include <AR/ar.h>
+#include <math.h>
 
 // ==== Definicion de estructuras ===================================
 struct TObject{
@@ -11,7 +12,7 @@ struct TObject{
   double width;                // Ancho del patron
   double center[2];            // Centro del patron  
   double patt_trans[3][4];     // Matriz asociada al patron
-  void (* drawme)(void);       // Puntero a funcion drawme
+  void (* drawme)(float);       // Puntero a funcion drawme
 };
 
 struct TObject *objects = NULL;
@@ -20,7 +21,7 @@ int nobjects = 0;
 void print_error (char *error) {  printf("%s\n", error); exit(0); }
 
 // ==== addObject (Anade objeto a la lista de objetos) ==============
-void addObject(char *p, double w, double c[2], void (*drawme)(void)) 
+void addObject(char *p, double w, double c[2], void (*drawme)(float)) 
 {
   int pattid;
 
@@ -39,19 +40,62 @@ void addObject(char *p, double w, double c[2], void (*drawme)(void))
 }
 
 // ==== draw****** (Dibujado especifico de cada objeto) =============
-void drawteapot(void) {
-  GLfloat material[]     = {0.0, 0.0, 1.0, 1.0};
-  glMaterialfv(GL_FRONT, GL_AMBIENT, material);
-  glTranslatef(0.0, 0.0, 60.0);
-  glRotatef(90.0, 1.0, 0.0, 0.0);
-  glutSolidTeapot(80.0);
-}
+void drawteapot(float a) {
+GLfloat material[4];
 
-void drawcube(void) {
-  GLfloat material[]     = {1.0, 0.0, 0.0, 1.0};
+	if(a<60.0){//ROjo
+	  	material[0]=1.0;
+		material[1]=0.0;
+		material[2]=0.0;
+		material[3]=1.0; 
+		printf("rojo " );
+	}else if(a>60.1 && a<120.0){//Verde
+		material[0]=0.0;
+		material[1]=1.0;
+		material[2]=0.0;
+		material[3]=1.0; 
+		printf("Verde ");
+	}else if(a>120.1){
+		material[0]=0.0;
+		material[1]=0.0;
+		material[2]=1.0;
+		material[3]=1.0; 
+		printf("Azul ");
+	}
+
   glMaterialfv(GL_FRONT, GL_AMBIENT, material);
   glTranslatef(0.0, 0.0, 40.0);
   glutSolidCube(80.0);
+  printf("teapot %f\n",a);
+
+}
+
+void drawcube(float a) {
+GLfloat material[4];
+
+	if(a<60.0){//ROjo
+	  	material[0]=1.0;
+		material[1]=0.0;
+		material[2]=0.0;
+		material[3]=1.0; 
+		printf("rojo " );
+	}else if(a>60.1 && a<120.0){//Verde
+		material[0]=0.0;
+		material[1]=1.0;
+		material[2]=0.0;
+		material[3]=1.0; 
+		printf("Verde ");
+	}else if(a>120.1){
+		material[0]=0.0;
+		material[1]=0.0;
+		material[2]=1.0;
+		material[3]=1.0; 
+		printf("Azul ");
+	}
+  glMaterialfv(GL_FRONT, GL_AMBIENT, material);
+  glTranslatef(0.0, 0.0, 40.0);
+  glutSolidCube(80.0);
+  printf("cube %f\n",a);
 }
 
 // ======== cleanup =================================================
@@ -73,6 +117,9 @@ void draw( void ) {
   double  gl_para[16];   // Esta matriz 4x4 es la usada por OpenGL
   GLfloat light_position[]  = {100.0,-200.0,200.0,0.0};
   int i;
+
+  double v[3];
+  float angle=0.0, module=0.0;
   
   argDrawMode3D();              // Cambiamos el contexto a 3D
   argDraw3dCamera(0, 0);        // Y la vista de la camara a 3D
@@ -88,7 +135,19 @@ void draw( void ) {
 
       glEnable(GL_LIGHTING);  glEnable(GL_LIGHT0);
       glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-      objects[i].drawme();      // Llamamos a su función de dibujar
+      // Calculamos el angulo de rotacion de la segunda marca
+      v[0] = objects[i].patt_trans[0][0];
+      v[1] = objects[i].patt_trans[1][0];
+      v[2] = objects[i].patt_trans[2][0];
+
+      module = sqrt(pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
+      v[0] = v[0]/module;  v[1] = v[1]/module; v[2] = v[2]/module;
+      angle = acos (v[0]) * 57.2958;   // Sexagesimales! * (180/PI)
+      //printf("SE ha detectado esto %f en el objeto %i\n",angle,i );
+
+
+
+      objects[i].drawme(angle);      // Llamamos a su función de dibujar
     }
   }
   glDisable(GL_DEPTH_TEST);
@@ -101,7 +160,7 @@ static void init( void ) {
   double c[2] = {0.0, 0.0};  // Centro de patron (por defecto)
   
   // Abrimos dispositivo de video
-  if(arVideoOpen("-dev=/dev/video0") < 0) exit(0);  
+  if(arVideoOpen("-dev=/dev/video1") < 0) exit(0);  
   if(arVideoInqSize(&xsize, &ysize) < 0) exit(0);
 
   // Cargamos los parametros intrinsecos de la camara
