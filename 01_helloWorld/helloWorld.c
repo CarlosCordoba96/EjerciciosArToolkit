@@ -60,7 +60,7 @@ static void init( void ) {
   arInitCparam(&cparam);   // Inicializamos la camara con "cparam"
 
   // Cargamos la marca que vamos a reconocer en este ejemplo
-  if((patt_id=arLoadPatt("data/simple.patt")) < 0) 
+  if((patt_id=arLoadPatt("data/4x4_1.patt")) < 0) 
     print_error ("Error en carga de patron\n");
 
   argInit(&cparam, 1.0, 0, 0, 0, 0);   // Abrimos la ventana 

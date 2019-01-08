@@ -4,6 +4,8 @@
 #include <AR/param.h>   
 #include <AR/ar.h>
 #include <math.h>
+
+
 int mode=0;
 // ==== Definicion de estructuras ===================================
 struct TObject{
@@ -14,7 +16,6 @@ struct TObject{
   double patt_trans[3][4];     // Matriz asociada al patron
   void (* drawme)(char);       // Puntero a funcion drawme
   char color;
-int num;
 };
 
 struct TObject *objects = NULL;
@@ -23,7 +24,7 @@ int nobjects = 0;
 void print_error (char *error) {  printf("%s\n", error); exit(0); }
 
 // ==== addObject (Anade objeto a la lista de objetos) ==============
-void addObject(char *p, double w, double c[2], void (*drawme)(char),int numero) 
+void addObject(char *p, double w, double c[2], void (*drawme)(char)) 
 {
   int pattid;
 
@@ -39,7 +40,7 @@ void addObject(char *p, double w, double c[2], void (*drawme)(char),int numero)
   objects[nobjects-1].center[0] = c[0];
   objects[nobjects-1].center[1] = c[1];
   objects[nobjects-1].drawme = drawme;
-  objects[nobjects-1].num=numero;
+
 }
 
 // ==== draw****** (Dibujado especifico de cada objeto) =============
@@ -68,6 +69,20 @@ GLfloat material[4];
   glutSolidCube(80.0);
 
 }
+
+void drawCenter(char a) {
+	GLfloat material[4];
+	material[0]=0.0;
+	material[1]=0.0;
+	material[2]=0.0;
+	material[3]=1.0; 
+  	glMaterialfv(GL_FRONT, GL_AMBIENT, material);
+ 	glTranslatef(0.0, 0.0, 40.0);
+  	glutSolidCube(80.0);
+
+}
+
+
 /*
 void drawcube(char a) {
 GLfloat material[4];
@@ -185,8 +200,10 @@ static void init( void ) {
   arInitCparam(&cparam);   // Inicializamos la camara con "cparam"
 
   // Inicializamos la lista de objetos
-  addObject("data/simple.patt", 90.0, c, drawteapot,0); 
-  addObject("data/identic.patt", 90.0, c, drawteapot,1); 
+  addObject("data/simple.patt", 90.0, c, drawteapot); 
+  addObject("data/identic.patt", 90.0, c, drawteapot); 
+  addObject("data/4x4_1.patt", 130.0, c, drawCenter); 
+
 
   argInit(&cparam, 1.0, 0, 0, 0, 0);   // Abrimos la ventana 
 }
