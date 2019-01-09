@@ -5,7 +5,9 @@
 #include <AR/ar.h>
 #include <math.h>
 
-
+#define red {1.0,0.0,0.0}
+#define green {0.0,1.0,0.0}
+#define blue {0.0,0.0,1.0}
 int mode=0;
 // ==== Definicion de estructuras ===================================
 struct TObject{
@@ -73,9 +75,19 @@ GLfloat material[4];
 
 void drawCenter(char a) {
 	GLfloat material[4];
-	material[0]=0.0;
-	material[1]=0.0;
-	material[2]=0.0;
+  if (dis02>300 && dist12>300) {//las dos marcas están lejos
+    /* code */
+    material[0]=0.0;
+    material[1]=0.0;
+    material[2]=0.0;
+  }else if (dis02<300 && dist12>300) {//la marca 0 esta mas cerca
+    /* code */
+  }else if (dis02>300 && dist12<300) {//la marca 1 esta mas cerca
+    /* code */
+  }else{//las dos marcas están cerca
+
+  }
+
 	material[3]=1.0;
   	glMaterialfv(GL_FRONT, GL_AMBIENT, material);
  	glTranslatef(0.0, 0.0, 40.0);
