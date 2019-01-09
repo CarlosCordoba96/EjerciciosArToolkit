@@ -5,9 +5,6 @@
 #include <AR/ar.h>
 #include <math.h>
 
-#define red {1.0,0.0,0.0}
-#define green {0.0,1.0,0.0}
-#define blue {0.0,0.0,1.0}
 int mode=0;
 // ==== Definicion de estructuras ===================================
 struct TObject{
@@ -18,6 +15,7 @@ struct TObject{
   double patt_trans[3][4];     // Matriz asociada al patron
   void (* drawme)(char);       // Puntero a funcion drawme
   char color;
+  double colour[3];
 };
 
 struct TObject *objects = NULL;
@@ -75,18 +73,33 @@ GLfloat material[4];
 
 void drawCenter(char a) {
 	GLfloat material[4];
-  if (dis02>300 && dist12>300) {//las dos marcas están lejos
-    /* code */
+
+  if (mode ==0) {
     material[0]=0.0;
     material[1]=0.0;
     material[2]=0.0;
-  }else if (dis02<300 && dist12>300) {//la marca 0 esta mas cerca
-    /* code */
-  }else if (dis02>300 && dist12<300) {//la marca 1 esta mas cerca
-    /* code */
-  }else{//las dos marcas están cerca
+  }else{
+    if (dist02>300 && dist12>300) {//las dos marcas están lejos
+      material[0]=0.0;
+      material[1]=0.0;
+      material[2]=0.0;
+    }else if (dist02<300 && dist12>300) {//la marca 0 esta mas cerca
+      material[0]=objects[0].colour[0];
+      material[1]=objects[0].colour[1];
+      material[2]=objects[0].colour[2];
+    }else if (dist02>300 && dist12<300) {//la marca 1 esta mas cerca
+      material[0]=objects[1].colour[0];
+      material[1]=objects[1].colour[1];
+      material[2]=objects[1].colour[2];
+    }else{//las dos marcas están cerca
+      material[0]=objects[0].colour[0]+objects[1].colour[0];
+      material[1]=objects[0].colour[1]+objects[1].colour[1];
+      material[2]=objects[0].colour[2]+objects[1].colour[2];
+    }
 
   }
+
+
 
 	material[3]=1.0;
   	glMaterialfv(GL_FRONT, GL_AMBIENT, material);
@@ -150,6 +163,7 @@ void draw( void ) {
   GLfloat light_position[]  = {100.0,-200.0,200.0,0.0};
   int i;
   char color;
+  double colour[3];
   double v[3];
   float angle=0.0, module=0.0;
   double m[3][4], m2[3][4];
@@ -196,12 +210,24 @@ if (objects[1].visible && objects[2].visible) {
 
 	if(angle<60.0){//ROjo
 		color='r';
+    colour[0]=1.0;
+    colour[1]=0.0;
+    colour[2]=0.0;
 	}else if(angle>60.1 && angle<120.0){//Verde
 		color='g';
+    colour[0]=0.0;
+    colour[1]=1.0;
+    colour[2]=0.0;
 	}else if(angle>120.1){
 		color='b';
+    colour[0]=0.0;
+    colour[1]=0.0;
+    colour[2]=1.0;
 	}
       objects[i].color=color;
+      objects[i].colour[0]=colour[0];
+      objects[i].colour[1]=colour[1];
+      objects[i].colour[2]=colour[2];
 	}
 
       objects[i].drawme(objects[i].color);      // Llamamos a su función de dibujar
