@@ -5,7 +5,6 @@
 #include <AR/ar.h>
 #include <math.h>
 
-int mode=0;
 // ==== Definicion de estructuras ===================================
 struct TObject{
   int id;                      // Identificador del patron
@@ -74,33 +73,29 @@ GLfloat material[4];
 void drawCenter(char a) {
 	GLfloat material[4];
 
-  if (mode ==0) {
-    material[0]=0.0;
-    material[1]=0.0;
-    material[2]=0.0;
-  }else{
-    if (dist02>300 && dist12>300) {//las dos marcas están lejos
+    if (dist02>200 && dist12>200) {//las dos marcas están lejos
       material[0]=0.0;
       material[1]=0.0;
       material[2]=0.0;
-    }else if (dist02<300 && dist12>300) {//la marca 0 esta mas cerca
+    }else if (dist02<200 && dist12>200) {//la marca 0 esta mas cerca
       material[0]=objects[0].colour[0];
       material[1]=objects[0].colour[1];
       material[2]=objects[0].colour[2];
-    }else if (dist02>300 && dist12<300) {//la marca 1 esta mas cerca
+    }else if (dist02>200 && dist12<200) {//la marca 1 esta mas cerca
       material[0]=objects[1].colour[0];
       material[1]=objects[1].colour[1];
       material[2]=objects[1].colour[2];
+
     }else{//las dos marcas están cerca
       material[0]=objects[0].colour[0]+objects[1].colour[0];
       material[1]=objects[0].colour[1]+objects[1].colour[1];
       material[2]=objects[0].colour[2]+objects[1].colour[2];
     }
 
-  }
 
-
-
+	printf("Objeto0 = %f, %f, %f\n",objects[0].colour[0],objects[0].colour[1],objects[0].colour[2]);
+	printf("Objeto1 = %f, %f, %f\n",objects[1].colour[0],objects[1].colour[1],objects[1].colour[2]);
+	printf("Material = %f, %f, %f\n",material[0],material[1],material[2]);
 	material[3]=1.0;
   	glMaterialfv(GL_FRONT, GL_AMBIENT, material);
  	glTranslatef(0.0, 0.0, 40.0);
@@ -147,10 +142,7 @@ static void cleanup(void) {   // Libera recursos al salir ...
 // ======== keyboard ================================================
 static void keyboard(unsigned char key, int x, int y) {
   switch (key) {
-  case 'z':
- 	mode=!mode;
 
-break;
   case 0x1B: case 'Q': case 'q':
     cleanup(); break;
 
@@ -179,6 +171,8 @@ void draw( void ) {
   arUtilMatMul(m, objects[2].patt_trans, m2);
   dist02 = sqrt(pow(m2[0][3],2)+pow(m2[1][3],2)+pow(m2[2][3],2));
   printf ("Distancia objects[0] y objects[2]= %G\n", dist02);
+}else{
+  dist02=999.0;
 }
 
 if (objects[1].visible && objects[2].visible) {
@@ -186,6 +180,8 @@ if (objects[1].visible && objects[2].visible) {
   arUtilMatMul(m, objects[2].patt_trans, m2);
   dist12 = sqrt(pow(m2[0][3],2)+pow(m2[1][3],2)+pow(m2[2][3],2));
   printf ("Distancia objects[0] y objects[1]= %G\n", dist12);
+}else{
+  dist12=999.0;
 }
 
   for (i=0; i<nobjects; i++) {
@@ -197,7 +193,6 @@ if (objects[1].visible && objects[2].visible) {
       glEnable(GL_LIGHTING);  glEnable(GL_LIGHT0);
       glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-	if(mode==0){
       // Calculamos el angulo de rotacion de la segunda marca si modo es 0, sino se queda el mismo color
       v[0] = objects[i].patt_trans[0][0];
       v[1] = objects[i].patt_trans[1][0];
@@ -228,9 +223,13 @@ if (objects[1].visible && objects[2].visible) {
       objects[i].colour[0]=colour[0];
       objects[i].colour[1]=colour[1];
       objects[i].colour[2]=colour[2];
-	}
+
 
       objects[i].drawme(objects[i].color);      // Llamamos a su función de dibujar
+    }else{
+      objects[i].colour[0]=0;
+      objects[i].colour[1]=0;
+      objects[i].colour[2]=0;
     }
   }
   glDisable(GL_DEPTH_TEST);
