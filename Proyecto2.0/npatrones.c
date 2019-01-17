@@ -12,9 +12,9 @@ struct TObject{
   double width;                // Ancho del patron
   double center[2];            // Centro del patron
   double patt_trans[3][4];     // Matriz asociada al patron
-  void (* drawme)(char);       // Puntero a funcion drawme
+  void (* drawme)(float,float,float);       // Puntero a funcion drawme
   char color;
-  double colour[3];
+  float colour[3];
 };
 
 struct TObject *objects = NULL;
@@ -24,7 +24,7 @@ double dist12;
 void print_error (char *error) {  printf("%s\n", error); exit(0); }
 
 // ==== addObject (Anade objeto a la lista de objetos) ==============
-void addObject(char *p, double w, double c[2], void (*drawme)(char))
+void addObject(char *p, double w, double c[2], void (*drawme)(float,float,float))
 {
   int pattid;
 
@@ -44,25 +44,12 @@ void addObject(char *p, double w, double c[2], void (*drawme)(char))
 }
 
 // ==== draw****** (Dibujado especifico de cada objeto) =============
-void drawteapot(char a) {
+void drawteapot(float r,float g,float b) {
 GLfloat material[4];
-
-	if(a=='r'){//ROjo
-	  	material[0]=1.0;
-		material[1]=0.0;
-		material[2]=0.0;
-		material[3]=1.0;
-	}else if(a=='g'){//Verde
-		material[0]=0.0;
-		material[1]=1.0;
-		material[2]=0.0;
-		material[3]=1.0;
-	}else if('b'){
-		material[0]=0.0;
-		material[1]=0.0;
-		material[2]=1.0;
-		material[3]=1.0;
-	}
+    material[0]=r;
+		material[1]=g;
+		material[2]=b;
+    material[3]=1.0;
 
   glMaterialfv(GL_FRONT, GL_AMBIENT, material);
   glTranslatef(0.0, 0.0, 40.0);
@@ -114,26 +101,27 @@ float t= v*(1 - (1-fe)*s);
 	}
 }
 
-void drawCenter(char a) {
+void drawCenter(float r,float g,float b) {
 	GLfloat material[4];
+    float numero=1.0;
 
-    if (dist02>200 && dist12>200) {//las dos marcas están lejos
+    if (dist02>250 && dist12>250) {//las dos marcas están lejos
       material[0]=0.0;
       material[1]=0.0;
       material[2]=0.0;
-    }else if (dist02<200 && dist12>200) {//la marca 0 esta mas cerca
+    }else if (dist02<250 && dist12>250) {//la marca 0 esta mas cerca
       material[0]=objects[0].colour[0];
       material[1]=objects[0].colour[1];
       material[2]=objects[0].colour[2];
-    }else if (dist02>200 && dist12<200) {//la marca 1 esta mas cerca
+    }else if (dist02>250 && dist12<250) {//la marca 1 esta mas cerca
       material[0]=objects[1].colour[0];
       material[1]=objects[1].colour[1];
       material[2]=objects[1].colour[2];
 
     }else{//las dos marcas están cerca
-      material[0]=objects[0].colour[0]+objects[1].colour[0];
-      material[1]=objects[0].colour[1]+objects[1].colour[1];
-      material[2]=objects[0].colour[2]+objects[1].colour[2];
+      material[0]=fmod(objects[0].colour[0]+objects[1].colour[0],1.0);
+      material[1]=fmod(objects[0].colour[1]+objects[1].colour[1],1.0);
+      material[2]=fmod(objects[0].colour[2]+objects[1].colour[2],1.0);
     }
 
 
@@ -246,36 +234,23 @@ if (objects[1].visible && objects[2].visible) {
       v[0] = v[0]/module;  v[1] = v[1]/module; v[2] = v[2]/module;
       angle = acos (v[0]) * 57.2958;   // Sexagesimales! * (180/PI)
       //printf("SE ha detectado esto %f en el objeto %i\n",angle,i );
+      float r;
+      float g;
+      float b;
+      angletorgb(angle,&r,&g,&b);
+      printf("r: %f g: %f b: %f con angulo: %f\n",r,g,b,angle);
 
-	if(angle<60.0){//ROjo
-		color='r';
-    colour[0]=1.0;
-    colour[1]=0.0;
-    colour[2]=0.0;
-	}else if(angle>60.1 && angle<120.0){//Verde
-		color='g';
-    colour[0]=0.0;
-    colour[1]=1.0;
-    colour[2]=0.0;
-	}else if(angle>120.1){
-		color='b';
-    colour[0]=0.0;
-    colour[1]=0.0;
-    colour[2]=1.0;
-	}
-      objects[i].color=color;
-      objects[i].colour[0]=colour[0];
-      objects[i].colour[1]=colour[1];
-      objects[i].colour[2]=colour[2];
+      colour[0]=r;
+      colour[1]=g;
+      colour[2]=b;
+      objects[i].colour[0]=r;
+      objects[i].colour[1]=g;
+      objects[i].colour[2]=b;
+      objects[i].drawme(r,g,b);
 
-
-      objects[i].drawme(objects[i].color);      // Llamamos a su función de dibujar
-    }else{
-      objects[i].colour[0]=0;
-      objects[i].colour[1]=0;
-      objects[i].colour[2]=0;
     }
   }
+ 
   glDisable(GL_DEPTH_TEST);
 }
 
@@ -286,7 +261,7 @@ static void init( void ) {
   double c[2] = {0.0, 0.0};  // Centro de patron (por defecto)
 
   // Abrimos dispositivo de video
-  if(arVideoOpen("-dev=/dev/video1") < 0) exit(0);
+  if(arVideoOpen("-dev=/dev/video0") < 0) exit(0);
   if(arVideoInqSize(&xsize, &ysize) < 0) exit(0);
 
   // Cargamos los parametros intrinsecos de la camara
