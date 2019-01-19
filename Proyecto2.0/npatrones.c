@@ -61,6 +61,8 @@ void angletorgb(float h,float * r,float *g, float *b){
 float s=1;
 float v=1;
 
+
+
 float h60 = h/60.0;
 float h60f =floor(h60);
 
@@ -99,7 +101,63 @@ float t= v*(1 - (1-fe)*s);
 		*g=p;
 		*b=q;
 	}
+ 
 }
+
+void angletorgb2(float h,float * r,float *g, float *b){//Código de http://dystopiancode.blogspot.com/2012/06/hsv-rgb-conversion-algorithms-in-c.html
+float s=1;
+float v=1;
+
+
+double c = 0.0, m = 0.0, x = 0.0;
+        c = v * s;
+        x = c * (1.0 - fabs(fmod(h / 60.0, 2) - 1.0));
+        m = v - c;
+        if (h >= 0.0 && h < 60.0)
+        {
+          *r=c + m;
+		      *g=x+m;
+		      *b=m;
+        }
+        else if (h >= 60.0 && h < 120.0)
+        {
+          *r=x+m;
+          *g=c+m;
+          *b=m;
+        }
+        else if (h >= 120.0 && h < 180.0)
+        {
+          *r=m;
+          *g=c+m;
+          *b=x+m;
+        }
+        else if (h >= 180.0 && h < 240.0)
+        {
+          *r=m;
+          *g=x+m;
+          *b=c+m;
+        }
+        else if (h >= 240.0 && h < 300.0)
+        {
+          *r=x+m;
+          *g=m;
+          *b=c+m;
+        }
+        else if (h >= 300.0 && h < 360.0)
+        {
+          *r=c+m;
+          *g=m;
+          *b=x+m;
+        }
+        else
+        {
+          *r=m;
+          *g=m;
+          *b=m;
+        }
+ 
+}
+
 
 void drawCenter(float r,float g,float b) {
 	GLfloat material[4];
@@ -119,9 +177,9 @@ void drawCenter(float r,float g,float b) {
       material[2]=objects[1].colour[2];
 
     }else{//las dos marcas están cerca
-      material[0]=fmod(objects[0].colour[0]+objects[1].colour[0],1.0);
-      material[1]=fmod(objects[0].colour[1]+objects[1].colour[1],1.0);
-      material[2]=fmod(objects[0].colour[2]+objects[1].colour[2],1.0);
+      material[0]=(objects[0].colour[0]+objects[1].colour[0])/2.0;
+      material[1]=(objects[0].colour[1]+objects[1].colour[1])/2.0;
+      material[2]=(objects[0].colour[2]+objects[1].colour[2])/2.0;
     }
 
 
@@ -233,11 +291,12 @@ if (objects[1].visible && objects[2].visible) {
       module = sqrt(pow(v[0],2)+pow(v[1],2)+pow(v[2],2));
       v[0] = v[0]/module;  v[1] = v[1]/module; v[2] = v[2]/module;
       angle = acos (v[0]) * 57.2958;   // Sexagesimales! * (180/PI)
+      angle=angle*2;//de 180 pasamos a tener 360º
       //printf("SE ha detectado esto %f en el objeto %i\n",angle,i );
       float r;
       float g;
       float b;
-      angletorgb(angle,&r,&g,&b);
+      angletorgb2(angle,&r,&g,&b);
       printf("r: %f g: %f b: %f con angulo: %f\n",r,g,b,angle);
 
       colour[0]=r;
@@ -261,7 +320,7 @@ static void init( void ) {
   double c[2] = {0.0, 0.0};  // Centro de patron (por defecto)
 
   // Abrimos dispositivo de video
-  if(arVideoOpen("-dev=/dev/video0") < 0) exit(0);
+  if(arVideoOpen("-dev=/dev/video1") < 0) exit(0);
   if(arVideoInqSize(&xsize, &ysize) < 0) exit(0);
 
   // Cargamos los parametros intrinsecos de la camara
